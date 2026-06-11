@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Excursion Adventure – Art Gallery of NSW</title>
+<style>
+  :root {
+    --cream: #FDF8F0;
+    --ink: #1A1410;
+    --warm-mid: #8B6F5E;
+    --accent: #C4572A;
+    --accent-light: #F0A07A;
+    --teal: #2A7A6F;
+    --teal-light: #E0F2EF;
+    --gold: #D4A832;
+    --gold-light: #FFF5D6;
+    --red-soft: #E84040;
+    --red-light: #FDE8E8;
+    --card-bg: #FFFFFF;
+    --shadow: 0 4px 24px rgba(26,20,16,0.10);
+    --radius: 18px;
+    --radius-sm: 10px;
+    --font-display: 'Georgia', serif;
+    --font-body: system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--cream);
+    font-family: var(--font-body);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+  .header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 20px 24px 16px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  .header-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 4vw, 1.5rem);
+    letter-spacing: 0.01em;
+    margin-bottom: 6px;
+  }
+  .header-title span { color: var(--accent-light); }
+  .header-meta {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+    opacity: 0.85;
+  }
+  .header-meta .pill {
+    background: rgba(255,255,255,0.12);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .header-meta .pill.score { color: var(--gold); background: rgba(212,168,50,0.18); }
+  .header-meta .pill.progress { color: var(--accent-light); background: rgba(196,87,42,0.18); }
+  .progress-bar-wrap {
+    background: var(--ink);
+    padding: 0 24px 10px;
+  }
+  .progress-bar-track {
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    height: 6px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    border-radius: 10px;
+    transition: width 0.5s ease;
+  }
+  .main {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 28px 16px 0;
+  }
+  .time-marker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--warm-mid);
+  }
+  .time-marker::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.3;
+  }
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    animation: slideIn 0.35s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .card-scene {
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid #F0EBE3;
+  }
+  .card-emoji {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .card-location {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--warm-mid);
+    margin-bottom: 6px;
+  }
+  .card-story {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #2E2520;
+    margin-bottom: 10px;
+  }
+  .card-question {
+    font-family: var(--font-display);
+    font-size: 1.12rem;
+    font-weight: bold;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .card-answers {
+    padding: 16px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .answer-btn {
+    background: #F9F5F0;
+    border: 2px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    text-align: left;
+    font-size: 0.97rem;
+    line-height: 1.5;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    font-family: var(--font-body);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .answer-btn:hover:not(:disabled) {
+    background: var(--teal-light);
+    border-color: var(--teal);
+    transform: translateX(3px);
+  }
+  .answer-btn .letter {
+    background: var(--warm-mid);
+    color: white;
+    font-weight: 700;
+    font-size: 0.8rem;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .answer-btn.correct { background: var(--teal-light); border-color: var(--teal); color: var(--teal); }
+  .answer-btn.correct .letter { background: var(--teal); }
+  .answer-btn.incorrect { background: var(--red-light); border-color: var(--red-soft); color: var(--red-soft); }
+  .answer-btn.incorrect .letter { background: var(--red-soft); }
+  .answer-btn:disabled { cursor: default; }
+  .feedback {
+    margin: 0 20px 16px;
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    display: none;
+  }
+  .feedback.show { display: block; animation: fadeUp 0.25s ease; }
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateY(6px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+  .feedback.correct-fb { background: var(--teal-light); border-left: 4px solid var(--teal); color: #1A4F47; }
+  .feedback.incorrect-fb { background: var(--red-light); border-left: 4px solid var(--red-soft); color: #7A1010; }
+  .feedback strong { display: block; margin-bottom: 4px; }
+  .feedback .prep-highlight {
+    display: inline-block;
+    background: white;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-weight: 700;
+    font-size: 0.9em;
+  }
+  .next-btn {
+    margin: 0 20px 20px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 14px 24px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    width: calc(100% - 40px);
+    transition: background 0.18s, transform 0.1s;
+    display: none;
+    font-family: var(--font-body);
+  }
+  .next-btn:hover { background: #A8451E; transform: translateY(-1px); }
+  .next-btn.show { display: block; animation: fadeUp 0.25s ease; }
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .ctrl-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 11px 16px;
+    border-radius: var(--radius-sm);
+    border: 2px solid;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.18s;
+  }
+  .ctrl-btn.reset { border-color: var(--red-soft); color: var(--red-soft); background: white; }
+  .ctrl-btn.reset:hover { background: var(--red-light); }
+  .ctrl-btn.prev { border-color: var(--teal); color: var(--teal); background: white; }
+  .ctrl-btn.prev:hover { background: var(--teal-light); }
+  .ctrl-btn.prev:disabled { opacity: 0.35; cursor: default; }
+  .ctrl-btn.shuffle { border-color: var(--gold); color: #8B6A00; background: white; }
+  .ctrl-btn.shuffle:hover { background: var(--gold-light); }
+  .end-screen { display: none; animation: slideIn 0.4s ease; }
+  .end-screen.show { display: block; }
+  .end-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px; }
+  .end-banner { background: linear-gradient(135deg, var(--ink) 0%, #3A2E28 100%); color: white; text-align: center; padding: 32px 24px; }
+  .end-trophy { font-size: 3.5rem; margin-bottom: 12px; }
+  .end-title { font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 6px; }
+  .end-subtitle { opacity: 0.75; font-size: 0.95rem; }
+  .end-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #F0EBE3; }
+  .end-stat { background: white; padding: 20px 16px; text-align: center; }
+  .end-stat-num { font-family: var(--font-display); font-size: 2rem; font-weight: bold; display: block; margin-bottom: 4px; }
+  .end-stat-num.green { color: var(--teal); }
+  .end-stat-num.red   { color: var(--red-soft); }
+  .end-stat-num.gold  { color: var(--gold); }
+  .end-stat-label { font-size: 0.8rem; color: var(--warm-mid); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+  .practice-section { padding: 20px 24px 24px; }
+  .practice-title { font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--warm-mid); margin-bottom: 12px; }
+  .practice-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .practice-tag { background: var(--gold-light); border: 1px solid var(--gold); color: #6B5000; border-radius: 20px; padding: 5px 12px; font-size: 0.85rem; font-weight: 600; }
+  .no-practice { color: var(--teal); font-size: 0.95rem; }
+  .end-restart { background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); padding: 16px 24px; font-size: 1.05rem; font-weight: 700; cursor: pointer; width: 100%; font-family: var(--font-body); transition: background 0.18s; margin-top: 4px; }
+  .end-restart:hover { background: #A8451E; }
+  .splash { text-align: center; padding: 40px 0 20px; }
+  .splash-emoji { font-size: 4rem; margin-bottom: 16px; display: block; }
+  .splash-title { font-family: var(--font-display); font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--ink); margin-bottom: 10px; line-height: 1.2; }
+  .splash-title span { color: var(--accent); }
+  .splash-desc { font-size: 1rem; color: var(--warm-mid); line-height: 1.6; max-width: 480px; margin: 0 auto 28px; }
+  .splash-start { background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); padding: 16px 40px; font-size: 1.1rem; font-weight: 700; cursor: pointer; font-family: var(--font-body); transition: background 0.18s, transform 0.1s; }
+  .splash-start:hover { background: #A8451E; transform: translateY(-2px); }
+  .splash-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 20px 0; }
+  .splash-pill { background: white; border: 1px solid #E8DDD5; border-radius: 20px; padding: 5px 12px; font-size: 0.82rem; color: var(--warm-mid); }
+  @media (max-width: 480px) {
+    .end-stat-num { font-size: 1.5rem; }
+    .header-meta { gap: 10px; }
+    .card-answers { padding: 12px 14px 16px; gap: 8px; }
+    .answer-btn { padding: 12px 14px; font-size: 0.92rem; }
+    .next-btn, .feedback { margin-left: 14px; margin-right: 14px; }
+    .next-btn { width: calc(100% - 28px); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header" id="header" style="display:none;">
+  <div class="header-title">🎨 <span>Excursion Adventure</span> – Art Gallery of NSW</div>
+  <div class="header-meta">
+    <span class="pill score" id="score-pill">⭐ Score: 0</span>
+    <span class="pill progress" id="progress-pill">📍 Q1 of 48</span>
+    <span class="pill" id="streak-pill">🔥 Streak: 0</span>
+  </div>
+</div>
+<div class="progress-bar-wrap" id="progress-bar-wrap" style="display:none;">
+  <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+</div>
+
+<div class="main">
+  <div id="splash">
+    <div class="splash">
+      <span class="splash-emoji">🚌🎨🌿</span>
+      <h1 class="splash-title">Excursion <span>Adventure</span></h1>
+      <p class="splash-desc">Not gonna lie, this is gonna be a cracker of a day! 🎉 Join your class on a ripper excursion from Campsie TAFE to the Art Gallery of NSW. Have a crack at choosing the right prepositions, knock it out of the park, and good onya for giving it a go! 🦘✨</p>
+      <div class="splash-pills">
+        <span class="splash-pill">🎯 48 scenarios</span>
+        <span class="splash-pill">🚌 Campsie → City</span>
+        <span class="splash-pill">🎨 Art Gallery of NSW</span>
+        <span class="splash-pill">🌿 Botanic Garden</span>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:4px;">
+        <button class="splash-start" onclick="startGame()">🔀 Shuffle mode</button>
+        <button class="splash-start" style="background:var(--teal);" onclick="startStory()">📖 Story order</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="game-area" style="display:none;">
+    <div class="time-marker" id="time-marker">⏰ 9:30 AM</div>
+    <div class="card" id="scenario-card">
+      <div class="card-scene">
+        <span class="card-emoji" id="card-emoji">🚍</span>
+        <div class="card-location" id="card-location">CAMPSIE TAFE</div>
+        <div class="card-story" id="card-story"></div>
+        <div class="card-question" id="card-question"></div>
+      </div>
+      <div class="card-answers" id="card-answers"></div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next →</button>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn prev" id="prev-btn" onclick="prevQuestion()">← Prev</button>
+      <button class="ctrl-btn reset" onclick="confirmReset()">↺ Restart</button>
+      <button class="ctrl-btn shuffle" id="shuffle-btn" onclick="toggleShuffle()">🔀 Shuffle: ON</button>
+    </div>
+  </div>
+
+  <div id="end-screen" class="end-screen">
+    <div class="end-card">
+      <div class="end-banner">
+        <div class="end-trophy" id="end-trophy">🏆</div>
+        <div class="end-title" id="end-title">Adventure Complete!</div>
+        <div class="end-subtitle" id="end-subtitle">You made it back to Campsie TAFE!</div>
+      </div>
+      <div class="end-stats">
+        <div class="end-stat"><span class="end-stat-num gold" id="end-score">0</span><span class="end-stat-label">Score</span></div>
+        <div class="end-stat"><span class="end-stat-num green" id="end-correct">0</span><span class="end-stat-label">Correct ✅</span></div>
+        <div class="end-stat"><span class="end-stat-num red" id="end-incorrect">0</span><span class="end-stat-label">Incorrect ❌</span></div>
+      </div>
+      <div class="practice-section">
+        <div class="practice-title">📚 Prepositions to practise more:</div>
+        <div class="practice-tags" id="practice-tags"></div>
+      </div>
+    </div>
+    <button class="end-restart" onclick="storyMode ? startStory() : startGame()">🔄 Have another crack!</button>
+  </div>
+</div>
+
+<script>
+const ALL_SCENARIOS = [
+
+  // ── 9:30 AM – Getting ready at TAFE ──
+  {
+    time: "9:30 AM", emoji: "🏫", location: "CAMPSIE TAFE – CLASSROOM",
+    story: "It's excursion day and the whole class is buzzing! 🎉 Delia and Sophie are first through the door, bright and early. Your teacher looks heaps pleased because everyone arrived on time. Well, almost everyone. Novie, Bella, Maria and Van couldn't make it today. Good onya to everyone who came!",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "The teacher is proud of her students for being on time.", correct: true },
+      { text: "The teacher is proud about her students for being on time.", correct: false },
+      { text: "The teacher is proud with her students for being on time.", correct: false },
+      { text: "The teacher is proud for her students for being on time.", correct: false },
+    ],
+    feedback: { correct: "🎉 Ripper! We say 'proud <b>of</b>' someone.", incorrect: "Not quite! We say 'proud <b>of</b>' someone – e.g. 'I am proud <b>of</b> you.'" },
+    prep: "proud of"
+  },
+  {
+    time: "9:30 AM", emoji: "🎒", location: "CAMPSIE TAFE – CORRIDOR",
+    story: "Your classmate Kazi has butterflies in his stomach 🦋 – he has never been to the city on an excursion before. The poor bloke looks a bit pale!",
+    question: "What does Kazi say?",
+    answers: [
+      { text: "I am worried about getting lost in the city.", correct: true },
+      { text: "I am worried of getting lost in the city.", correct: false },
+      { text: "I am worried for getting lost in the city.", correct: false },
+      { text: "I am worried at getting lost in the city.", correct: false },
+    ],
+    feedback: { correct: "✅ Spot on! We say 'worried <b>about</b>' something.", incorrect: "The right preposition is <b>about</b> – 'worried <b>about</b> something.'" },
+    prep: "worried about"
+  },
+  {
+    time: "9:30 AM", emoji: "📋", location: "CAMPSIE TAFE – ENTRANCE",
+    story: "The teacher passes around the excursion note. 📝 She doesn't beat around the bush. She tells the class straight up what the note is for.",
+    question: "Which sentence uses the correct preposition?",
+    answers: [
+      { text: "The note explains the reason for visiting the Art Gallery of NSW.", correct: true },
+      { text: "The note explains the reason of visiting the Art Gallery of NSW.", correct: false },
+      { text: "The note explains the reason to visiting the Art Gallery of NSW.", correct: false },
+      { text: "The note explains the reason with visiting the Art Gallery of NSW.", correct: false },
+    ],
+    feedback: { correct: "✅ Nice one! We say 'the reason <b>for</b>' doing something.", incorrect: "The correct preposition is <b>for</b> – 'the reason <b>for</b>' doing something." },
+    prep: "reason for"
+  },
+  {
+    time: "9:32 AM", emoji: "🙋", location: "CAMPSIE TAFE – ENTRANCE",
+    story: "Your teacher asks if anyone is afraid to speak to strangers in English today. 😬 Cindy slowly raises her hand. A few others follow.",
+    question: "What does Cindy say?",
+    answers: [
+      { text: "I am afraid to speak English with people I don't know.", correct: true },
+      { text: "I am afraid of to speak English with people I don't know.", correct: false },
+      { text: "I am afraid for speaking English with people I don't know.", correct: false },
+      { text: "I am afraid with speaking English with people I don't know.", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! 'Afraid to' is used before a verb – 'afraid <b>to</b> do something'.", incorrect: "We say 'afraid <b>to</b>' before a verb – 'I am afraid <b>to</b> speak.'" },
+    prep: "afraid to"
+  },
+
+  // ── 9:35 AM – Bus stop ──
+  {
+    time: "9:35 AM", emoji: "🚌", location: "BUS STOP – CAMPSIE",
+    story: "You all walk to the bus stop on Canterbury Road. 🚶 The bus is chockers! It is flat out packed. Yun has brought her granddaughter along for the day. How sweet! 👵👧 Yun looks a little uncertain about navigating the bus with a little one in tow.",
+    question: "What does Yun say to the teacher?",
+    answers: [
+      { text: "I am not used to catching buses by myself.", correct: true },
+      { text: "I am not used of catching buses by myself.", correct: false },
+      { text: "I am not used in catching buses by myself.", correct: false },
+      { text: "I am not used for catching buses by myself.", correct: false },
+    ],
+    feedback: { correct: "✅ You're fully across that one! 'Used <b>to</b>' means something is familiar or a habit.", incorrect: "The correct form is 'used <b>to</b>' – it means something is familiar or a habit." },
+    prep: "used to"
+  },
+  {
+    time: "9:38 AM", emoji: "🧓", location: "ON THE BUS",
+    story: "The bus is packed, totally chockers! 😅 Coleen spots an older lady standing and nudges you, and she reckons someone should give up their seat. You tell your mate next to you what you're thinking.",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "I am thinking about giving her my seat.", correct: true },
+      { text: "I am thinking of give her my seat.", correct: false },
+      { text: "I am thinking in giving her my seat.", correct: false },
+      { text: "I am thinking for giving her my seat.", correct: false },
+    ],
+    feedback: { correct: "✅ Good onya! 'Think <b>about</b>' means to consider doing something.", incorrect: "We 'think <b>about</b>' doing something when we are considering it." },
+    prep: "think about"
+  },
+  {
+    time: "9:42 AM", emoji: "🎧", location: "ON THE BUS",
+    story: "Coleen is such a larrikin! 😄 She has her headphones in and is ignoring the teacher. The teacher raises an eyebrow at her.",
+    question: "What does the teacher say?",
+    answers: [
+      { text: "Coleen, please listen to me when I am talking! 🙄", correct: true },
+      { text: "Coleen, please listen me when I am talking!", correct: false },
+      { text: "Coleen, please listen at me when I am talking!", correct: false },
+      { text: "Coleen, please listen for me when I am talking!", correct: false },
+    ],
+    feedback: { correct: "✅ Right! We always say 'listen <b>to</b>' someone.", incorrect: "The correct preposition is <b>to</b> – we 'listen <b>to</b>' someone." },
+    prep: "listen to"
+  },
+
+  // ── 9:50 AM – Sydenham Station ──
+  {
+    time: "9:52 AM", emoji: "🚉", location: "SYDENHAM STATION",
+    story: "You arrive at Sydenham Station. 🚉 There's a big screen showing metro times. Nina squints up at it. She wants to make sure everyone is on the right platform!",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "We arrive at Sydenham Station and look for the platform.", correct: true },
+      { text: "We arrive to Sydenham Station and look for the platform.", correct: false },
+      { text: "We arrive in Sydenham Station and look for the platform.", correct: false },
+      { text: "We arrive on Sydenham Station and look for the platform.", correct: false },
+    ],
+    feedback: { correct: "✅ Nailed it! We 'arrive <b>at</b>' a specific place like a station or building.", incorrect: "We 'arrive <b>at</b>' specific places (stations, buildings). We 'arrive <b>in</b>' cities or countries." },
+    prep: "arrive at"
+  },
+  {
+    time: "9:55 AM", emoji: "🎫", location: "SYDENHAM STATION – PLATFORM",
+    story: "Nana forgot her Opal card. Classic! 😂 She needs to tap on but has no card. She looks at you with big eyes. No worries, you can help!",
+    question: "What does Nana say?",
+    answers: [
+      { text: "Can I borrow your Opal card from you, please? 🙏", correct: true },
+      { text: "Can I borrow your Opal card by you, please?", correct: false },
+      { text: "Can I borrow your Opal card of you, please?", correct: false },
+      { text: "Can I borrow your Opal card with you, please?", correct: false },
+    ],
+    feedback: { correct: "✅ Good on ya! We 'borrow something <b>from</b>' someone.", incorrect: "We say 'borrow <b>from</b>' – you borrow something <b>from</b> someone." },
+    prep: "borrow from"
+  },
+  {
+    time: "9:57 AM", emoji: "😤", location: "SYDENHAM STATION – PLATFORM",
+    story: "A random bloke 👨 at the station is being super grumpy. He pushes past everyone in the queue. Mohammod raises his eyebrows, and the teacher is NOT happy about it either.",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "The teacher is angry with the man for pushing in the queue.", correct: true },
+      { text: "The teacher is angry to the man for pushing in the queue.", correct: false },
+      { text: "The teacher is angry at the man for pushing in the queue.", correct: false },
+      { text: "The teacher is angry of the man for pushing in the queue.", correct: false },
+    ],
+    feedback: { correct: "✅ Yes! We are 'angry <b>with</b>' a person. (We are 'angry <b>about</b>' a situation.)", incorrect: "We are 'angry <b>with</b>' a person – 'She is angry <b>with</b> him.'" },
+    prep: "angry with"
+  },
+
+  // ── 10:00 AM – On the metro ──
+  {
+    time: "10:02 AM", emoji: "🚆", location: "ON THE METRO",
+    story: "The metro zooms off! 🚆 Everyone is excited. Not gonna lie, the vibes are heaps good. Your teacher asks what everyone is looking forward to seeing. Grace's hand shoots straight up.",
+    question: "What does Grace say?",
+    answers: [
+      { text: "I am excited about seeing the artworks at the gallery! 🎨", correct: true },
+      { text: "I am excited for seeing the artworks at the gallery!", correct: false },
+      { text: "I am excited of seeing the artworks at the gallery!", correct: false },
+      { text: "I am excited at seeing the artworks at the gallery!", correct: false },
+    ],
+    feedback: { correct: "✅ You knocked it out of the park! 'Excited <b>about</b>' something is the correct collocation.", incorrect: "The right preposition is <b>about</b> – 'excited <b>about</b>' doing or seeing something." },
+    prep: "excited about"
+  },
+  {
+    time: "10:08 AM", emoji: "📱", location: "ON THE METRO",
+    story: "Scott is snapping photos out the metro window, documenting every moment of the trip. 📸 A tourist 🗺️ nearby notices the excitement and asks you how to get to the Art Gallery of NSW. You reckon you actually know the answer!",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "The gallery is different from what I expected – it is bigger!", correct: true },
+      { text: "The gallery is different of what I expected – it is bigger!", correct: false },
+      { text: "The gallery is different with what I expected – it is bigger!", correct: false },
+      { text: "The gallery is different since what I expected – it is bigger!", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! 'Different <b>from</b>' is the standard form. (In Australian English, 'different <b>to</b>' is also common!)", incorrect: "'Different <b>from</b>' is the most widely accepted. In Aussie English, 'different <b>to</b>' works too!" },
+    prep: "different from"
+  },
+  {
+    time: "10:10 AM", emoji: "🌏", location: "ON THE METRO",
+    story: "Your friend Hai 🎨 is going about his day dreaming of being an artist. He wants to apply to art school after TAFE. What a legend!",
+    question: "What does Hai say?",
+    answers: [
+      { text: "I want to apply for a place at the National Art School.", correct: true },
+      { text: "I want to apply to a place at the National Art School.", correct: false },
+      { text: "I want to apply on a place at the National Art School.", correct: false },
+      { text: "I want to apply in a place at the National Art School.", correct: false },
+    ],
+    feedback: { correct: "✅ You're fully across this one! We 'apply <b>for</b>' a position, grant, course, or place.", incorrect: "We say 'apply <b>for</b>' something – like a job, a course, or a place." },
+    prep: "apply for"
+  },
+  {
+    time: "10:12 AM", emoji: "🎓", location: "ON THE METRO",
+    story: "Hai also says he wants to write to the art school to introduce himself. He says his rellos back home never believed he would study art! 👨‍👩‍👧",
+    question: "What does Hai say?",
+    answers: [
+      { text: "I want to apply to the art school with a letter of introduction.", correct: true },
+      { text: "I want to apply for the art school with a letter of introduction.", correct: false },
+      { text: "I want to apply on the art school with a letter of introduction.", correct: false },
+      { text: "I want to apply at the art school with a letter of introduction.", correct: false },
+    ],
+    feedback: { correct: "✅ Good onya! We 'apply <b>to</b>' a school or institution.", incorrect: "We 'apply <b>to</b>' a school or institution (the place), and 'apply <b>for</b>' a position or course." },
+    prep: "apply to"
+  },
+
+  // ── 10:15–10:35 AM – Walk to gallery ──
+  {
+    time: "10:18 AM", emoji: "🚶", location: "MARTIN PLACE STATION",
+    story: "You hop off at Martin Place Station. 🌆 The city is flat out busy, everyone rushing around. Henry is already ahead of the group, grinning from ear to ear. You feel like a proper Sydneysider today!",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "We arrive in the city and walk towards the gallery.", correct: true },
+      { text: "We arrive at the city and walk towards the gallery.", correct: false },
+      { text: "We arrive on the city and walk towards the gallery.", correct: false },
+      { text: "We arrive to the city and walk towards the gallery.", correct: false },
+    ],
+    feedback: { correct: "✅ You vibe with it! We 'arrive <b>in</b>' a city, country, or large area.", incorrect: "We use 'arrive <b>in</b>' for cities and countries – 'We arrived <b>in</b> Sydney.'" },
+    prep: "arrive in"
+  },
+  {
+    time: "10:25 AM", emoji: "🗺️", location: "MACQUARIE STREET",
+    story: "The group stops at a corner. 🗺️ Kazi is a total stickybeak. He is looking at all the old buildings and has lost track of where they are going!",
+    question: "What does Kazi say to a passerby?",
+    answers: [
+      { text: "Excuse me, could you talk to me about how to get to the Art Gallery?", correct: true },
+      { text: "Excuse me, could you talk with me about how to get to the Art Gallery?", correct: false },
+      { text: "Excuse me, could you talk about me on how to get to the Art Gallery?", correct: false },
+      { text: "Excuse me, could you talk for me about how to get to the Art Gallery?", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! 'Talk <b>to</b> someone <b>about</b> something' is the natural expression.", incorrect: "The natural expression is 'talk <b>to</b> someone <b>about</b> something.'" },
+    prep: "talk to"
+  },
+  {
+    time: "10:30 AM", emoji: "🏛️", location: "OUTSIDE THE GALLERY",
+    story: "You finally see the Art Gallery of NSW! 😍 It is heaps impressive. Yun stops and just stares. She has always loved art but never came here before.",
+    question: "What does Yun say?",
+    answers: [
+      { text: "I have always been interested in art, but I have never been here before!", correct: true },
+      { text: "I have always been interested about art, but I have never been here before!", correct: false },
+      { text: "I have always been interested for art, but I have never been here before!", correct: false },
+      { text: "I have always been interested on art, but I have never been here before!", correct: false },
+    ],
+    feedback: { correct: "✅ Hit the right note! We are 'interested <b>in</b>' something.", incorrect: "The correct preposition is <b>in</b> – 'interested <b>in</b>' something." },
+    prep: "interested in"
+  },
+
+  // ── 10:35 AM – Inside the gallery ──
+  {
+    time: "10:37 AM", emoji: "🎨", location: "GALLERY ENTRANCE",
+    story: "A gallery staff member greets your class with a big smile. 😊 She says the gallery is a nifty space and that every student is responsible for their own belongings. Bobo and Nina are paying close attention.",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "Each student is responsible for keeping their bag with them.", correct: true },
+      { text: "Each student is responsible of keeping their bag with them.", correct: false },
+      { text: "Each student is responsible to keep their bag with them.", correct: false },
+      { text: "Each student is responsible with keeping their bag with them.", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! We are 'responsible <b>for</b>' doing something.", incorrect: "The right preposition is <b>for</b> – 'responsible <b>for</b>' something." },
+    prep: "responsible for"
+  },
+  {
+    time: "10:45 AM", emoji: "🖼️", location: "GALLERY ROOM 1",
+    story: "You walk into the first room and there are paintings by Monet and Picasso on display! 😲 Absolutely stunning. The class is totally in awe. Arzu and Mohammod, the cutest couple in class 💑, stand together in front of a Monet, completely speechless. What a cracker of a room!",
+    question: "What does Arzu say?",
+    answers: [
+      { text: "I love looking at abstract art – it makes me think of so many things. 🤔", correct: true },
+      { text: "I love looking on abstract art – it makes me think of so many things.", correct: false },
+      { text: "I love looking for abstract art – it makes me think of so many things.", correct: false },
+      { text: "I love looking in abstract art – it makes me think of so many things.", correct: false },
+    ],
+    feedback: { correct: "✅ Steal the show with that answer! We 'look <b>at</b>' something and 'think <b>of</b>' means to be reminded of something.", incorrect: "We 'look <b>at</b>' something – and 'think <b>of</b>' means to be reminded of something." },
+    prep: "look at"
+  },
+  {
+    time: "10:52 AM", emoji: "🤔", location: "GALLERY ROOM 2",
+    story: "Your teacher stops in front of a sculpture. 🗿 Grace stares at it for a long time. The teacher asks what you think of it. You reckon it looks like a giant prawn. (It is NOT a prawn.)",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "I think of it as a very unusual and interesting sculpture.", correct: true },
+      { text: "I think about it as a very unusual and interesting sculpture.", correct: false },
+      { text: "I think on it as a very unusual and interesting sculpture.", correct: false },
+      { text: "I think for it as a very unusual and interesting sculpture.", correct: false },
+    ],
+    feedback: { correct: "✅ Good onya! 'Think <b>of</b> something <b>as</b>' means to see it in a certain way.", incorrect: "'Think <b>of</b> something <b>as</b>' means to see or describe something in a certain way." },
+    prep: "think of"
+  },
+
+  // ── Coffee break ──
+  {
+    time: "11:00 AM", emoji: "☕", location: "GALLERY CAFÉ",
+    story: "Coffee break time! ☕ Your teacher, what an absolute legend, offers to shout the class a round of coffees. Delia is chuffed. She is very fond of a flat white!",
+    question: "What does Delia say?",
+    answers: [
+      { text: "Thank you! I am very fond of a flat white in the morning. ☕", correct: true },
+      { text: "Thank you! I am very fond for a flat white in the morning.", correct: false },
+      { text: "Thank you! I am very fond about a flat white in the morning.", correct: false },
+      { text: "Thank you! I am very fond of to have a flat white in the morning.", correct: false },
+    ],
+    feedback: { correct: "✅ Lovely! 'Fond <b>of</b>' means you really like something.", incorrect: "The correct preposition is <b>of</b> – 'fond <b>of</b>' something means you really like it." },
+    prep: "fond of"
+  },
+  {
+    time: "11:05 AM", emoji: "🍰", location: "GALLERY CAFÉ",
+    story: "Kazi spots some lollies 🍬 and a big slice of cake at the café counter. He is heaps tempted. He looks at the prices and sighs deeply.",
+    question: "What does Kazi say?",
+    answers: [
+      { text: "I spend too much money on food when I come to the city!", correct: true },
+      { text: "I spend too much money for food when I come to the city!", correct: false },
+      { text: "I spend too much money with food when I come to the city!", correct: false },
+      { text: "I spend too much money about food when I come to the city!", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! We 'spend money <b>on</b>' something.", incorrect: "We 'spend money <b>on</b>' something – 'I spent $20 <b>on</b> lunch.'" },
+    prep: "spend on"
+  },
+
+  // ── Interactive space ──
+  {
+    time: "11:20 AM", emoji: "🎭", location: "GALLERY – INTERACTIVE SPACE",
+    story: "There is a nifty interactive art installation! 🎭 Sophie and Kazi are already poking at it. Your teacher says it depends on the group deciding together. Pull out all the stops, team!",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "What we create depends on everyone agreeing on a theme.", correct: true },
+      { text: "What we create depends to everyone agreeing on a theme.", correct: false },
+      { text: "What we create depends with everyone agreeing on a theme.", correct: false },
+      { text: "What we create depends at everyone agreeing on a theme.", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! We 'depend <b>on</b>' something or someone.", incorrect: "We 'depend <b>on</b>' something – 'it depends <b>on</b> the group.'" },
+    prep: "depend on"
+  },
+  {
+    time: "11:25 AM", emoji: "🤝", location: "GALLERY – INTERACTIVE SPACE",
+    story: "The group needs to choose a theme. 🎨 Delia wants abstract, others want landscapes. The teacher is the gasbag, she has heaps of ideas too!",
+    question: "What does the teacher say?",
+    answers: [
+      { text: "Let's try to agree on a theme that everyone is happy with. 🙌", correct: true },
+      { text: "Let's try to agree to a theme that everyone is happy with.", correct: false },
+      { text: "Let's try to agree about a theme that everyone is happy with.", correct: false },
+      { text: "Let's try to agree for a theme that everyone is happy with.", correct: false },
+    ],
+    feedback: { correct: "✅ Yes! 'Agree <b>on</b>' is used when a group decides something together.", incorrect: "We 'agree <b>on</b>' a topic or decision – 'Can we agree <b>on</b> a time?'" },
+    prep: "agree on"
+  },
+  {
+    time: "11:35 AM", emoji: "🌏", location: "GALLERY ROOM 3",
+    story: "Your teacher is fully across the history of the next artwork, a beautiful painting by a First Nations artist. 🌿 Hai and Arzu listen carefully as she explains it is very different to Western art styles.",
+    question: "What does the teacher say?",
+    answers: [
+      { text: "This style is different to the European paintings we saw earlier.", correct: true },
+      { text: "This style is different of the European paintings we saw earlier.", correct: false },
+      { text: "This style is different on the European paintings we saw earlier.", correct: false },
+      { text: "This style is different by the European paintings we saw earlier.", correct: false },
+    ],
+    feedback: { correct: "✅ Good onya! In Australian English, 'different <b>to</b>' is widely used and accepted.", incorrect: "In Australian English, 'different <b>to</b>' is commonly used – 'This is different <b>to</b> that.'" },
+    prep: "different to"
+  },
+
+  // ── Photography incident ──
+  {
+    time: "11:45 AM", emoji: "📸", location: "GALLERY ROOM 4",
+    story: "Scott has been quietly snapping photos of every room and artwork all morning. The man loves documenting everything. 📸 But now a different visitor is using flash photography. Totally not allowed! 🚫 A gallery guard is furious. The situation feels like it is about to fall flat on its face.",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "The guard is angry about the visitor using flash photography.", correct: true },
+      { text: "The guard is angry at the visitor using flash photography.", correct: false },
+      { text: "The guard is angry for the visitor using flash photography.", correct: false },
+      { text: "The guard is angry of the visitor using flash photography.", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! We are 'angry <b>about</b>' a situation.", incorrect: "We are 'angry <b>about</b>' a situation. We are 'angry <b>with</b>' a person." },
+    prep: "angry about"
+  },
+  {
+    time: "11:50 AM", emoji: "🙇", location: "GALLERY ROOM 4",
+    story: "The flash-photography visitor realises their mistake. They feel terrible and want to say sorry. 😳 They don't complain. They just apologise!",
+    question: "What does the visitor say?",
+    answers: [
+      { text: "I apologise to you for taking that photo – I didn't know the rules. 🙏", correct: true },
+      { text: "I apologise for you for taking that photo – I didn't know the rules.", correct: false },
+      { text: "I apologise about you for taking that photo – I didn't know the rules.", correct: false },
+      { text: "I apologise with you for taking that photo – I didn't know the rules.", correct: false },
+    ],
+    feedback: { correct: "✅ Exactly right! We 'apologise <b>to</b>' someone and 'apologise <b>for</b>' something.", incorrect: "We 'apologise <b>to</b>' a person and 'apologise <b>for</b>' the thing we did." },
+    prep: "apologise to"
+  },
+  {
+    time: "11:55 AM", emoji: "🙁", location: "GALLERY ROOM 4",
+    story: "After the photo drama, Mohammod says he is going to complain. But who should he complain TO? He turns to the teacher with a grumpy face. 😤",
+    question: "What does Mohammod say?",
+    answers: [
+      { text: "I want to complain to the gallery manager about that rude visitor!", correct: true },
+      { text: "I want to complain for the gallery manager about that rude visitor!", correct: false },
+      { text: "I want to complain at the gallery manager about that rude visitor!", correct: false },
+      { text: "I want to complain with the gallery manager about that rude visitor!", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! We 'complain <b>to</b>' a person (the manager) and 'complain <b>about</b>' the issue.", incorrect: "We 'complain <b>to</b>' a person in authority – 'I complained <b>to</b> the manager.'" },
+    prep: "complain to"
+  },
+
+  // ── Lunch ──
+  {
+    time: "12:15 PM", emoji: "🥗", location: "GALLERY CAFÉ – LUNCH",
+    story: "Lunchtime! 🍽️ Everyone is flat out starving. Then Nina, absolute legend, shouts heaps of food for the whole group! 🙌 Meanwhile, Delia, Coleen, Cindy and Sophie decide to head off early. They wave goodbye from the café door. And Bobo looks at the menu and whines. She forgot her wallet anyway! Classic Bobo! 😂",
+    question: "What does Bobo say?",
+    answers: [
+      { text: "I am sick of always forgetting to bring my lunch! 😩", correct: true },
+      { text: "I am sick from always forgetting to bring my lunch!", correct: false },
+      { text: "I am sick about always forgetting to bring my lunch!", correct: false },
+      { text: "I am sick with always forgetting to bring my lunch!", correct: false },
+    ],
+    feedback: { correct: "✅ Right! 'Sick <b>of</b>' means you are tired and frustrated by something.", incorrect: "'Sick <b>of</b>' means you are tired or frustrated by something happening repeatedly." },
+    prep: "sick of"
+  },
+  {
+    time: "12:20 PM", emoji: "🍵", location: "GALLERY CAFÉ – LUNCH",
+    story: "Grace ordered a sandwich with no cheese, but it has heaps of cheese in it! 🧀 She is not happy. She goes back to the counter politely.",
+    question: "What does Grace say?",
+    answers: [
+      { text: "Excuse me, I have a problem with my order – it has cheese in it.", correct: true },
+      { text: "Excuse me, I have a problem about my order – it has cheese in it.", correct: false },
+      { text: "Excuse me, I have a problem of my order – it has cheese in it.", correct: false },
+      { text: "Excuse me, I have a problem for my order – it has cheese in it.", correct: false },
+    ],
+    feedback: { correct: "✅ Well done! We have 'a problem <b>with</b>' something.", incorrect: "The correct expression is 'a problem <b>with</b>' something." },
+    prep: "problem with"
+  },
+  {
+    time: "12:30 PM", emoji: "🍷", location: "GALLERY CAFÉ – LUNCH",
+    story: "And then... something AMAZING happened. 😂 Henry, the most cheerful bloke in the class, walks up to the counter and shouts white wine for the whole class! The teacher nearly faints. 🤣",
+    question: "What does Henry say to the class?",
+    answers: [
+      { text: "Good onya, everyone – I am shouting white wine for the whole class! 🍷", correct: true },
+      { text: "Good onya, everyone – I am shouting white wine to the whole class!", correct: false },
+      { text: "Good onya, everyone – I am shouting white wine at the whole class!", correct: false },
+      { text: "Good onya, everyone – I am shouting white wine on the whole class!", correct: false },
+    ],
+    feedback: { correct: "✅ Ha! In Australian English, to 'shout' someone means to pay <b>for</b> them. We shout something '<b>for</b>' someone.", incorrect: "In Australian English, to 'shout' someone means to pay for them. We shout something '<b>for</b>' someone." },
+    prep: "good for"
+  },
+  {
+    time: "12:35 PM", emoji: "😂", location: "GALLERY CAFÉ – LUNCH",
+    story: "The teacher laughs and says no wine today, but she is impressed by Henry's generosity! 🥂 She says Henry is the cause of all the fun on this excursion.",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "Henry is the cause of all the laughter today! 😂", correct: true },
+      { text: "Henry is the cause for all the laughter today!", correct: false },
+      { text: "Henry is the cause about all the laughter today!", correct: false },
+      { text: "Henry is the cause with all the laughter today!", correct: false },
+    ],
+    feedback: { correct: "✅ Spot on! 'The cause <b>of</b>' something is the correct expression.", incorrect: "We say 'the cause <b>of</b>' something – 'the cause <b>of</b> the problem.'" },
+    prep: "cause of"
+  },
+
+  // ── Group discussion ──
+  {
+    time: "1:00 PM", emoji: "💬", location: "GALLERY – SEATED AREA",
+    story: "The class sits down for a group reflection. 💬 The teacher asks everyone to share their favourite artwork. Cindy is already bursting to share hers. There is heaps to talk about!",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "The class talks about their favourite artworks. 🗣️", correct: true },
+      { text: "The class talks for their favourite artworks.", correct: false },
+      { text: "The class talks of their favourite artworks.", correct: false },
+      { text: "The class talks at their favourite artworks.", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! We 'talk <b>about</b>' a topic.", incorrect: "We 'talk <b>about</b>' a topic." },
+    prep: "talk about"
+  },
+  {
+    time: "1:05 PM", emoji: "🗣️", location: "GALLERY – SEATED AREA",
+    story: "Yun and Kazi are having a great chat. 😊 They talk with each other about their favourite exhibits. They are so different from each other, but they totally vibe with it!",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "Yun talks with Kazi about the artworks they liked most.", correct: true },
+      { text: "Yun talks to Kazi about the artworks they liked most.", correct: false },
+      { text: "Yun talks for Kazi about the artworks they liked most.", correct: false },
+      { text: "Yun talks of Kazi about the artworks they liked most.", correct: false },
+    ],
+    feedback: { correct: "✅ Both 'talk <b>with</b>' and 'talk <b>to</b>' are correct, but 'talk <b>with</b>' suggests a two-way conversation. Great choice!", incorrect: "Both 'talk <b>with</b>' and 'talk <b>to</b>' are used in English. 'Talk <b>with</b>' suggests a back-and-forth conversation." },
+    prep: "talk with"
+  },
+  {
+    time: "1:10 PM", emoji: "🧠", location: "GALLERY – SEATED AREA",
+    story: "The teacher, total gasbag in the best way 😄, asks you to explain the difference between two artworks in the gallery. Nana gives it a crack. You've got this!",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "The difference between the two paintings is the use of colour. 🎨", correct: true },
+      { text: "The difference of the two paintings is the use of colour.", correct: false },
+      { text: "The difference to the two paintings is the use of colour.", correct: false },
+      { text: "The difference from the two paintings is the use of colour.", correct: false },
+    ],
+    feedback: { correct: "✅ Excellent! 'The difference <b>between</b> X and Y' is the correct structure.", incorrect: "We say 'the difference <b>between</b> X and Y.'" },
+    prep: "difference between"
+  },
+  {
+    time: "1:15 PM", emoji: "😰", location: "GALLERY – SEATED AREA",
+    story: "Cindy can't find her phone! 😱 She looks in her bag, her pockets, her bag again. She can't cope. She's flat out panicking!",
+    question: "What does Cindy say?",
+    answers: [
+      { text: "I can't cope with losing things – I am always so disorganised! 😩", correct: true },
+      { text: "I can't cope to losing things – I am always so disorganised!", correct: false },
+      { text: "I can't cope about losing things – I am always so disorganised!", correct: false },
+      { text: "I can't cope on losing things – I am always so disorganised!", correct: false },
+    ],
+    feedback: { correct: "✅ Well done! We 'cope <b>with</b>' a difficult situation.", incorrect: "We 'cope <b>with</b>' a difficulty – 'How do you cope <b>with</b> stress?'" },
+    prep: "cope with"
+  },
+
+  // ── Gift shop / Lost phone found ──
+  {
+    time: "1:22 PM", emoji: "🎉", location: "GALLERY – INFORMATION DESK",
+    story: "Cindy's phone was at the information desk! 🎉 A kind stranger handed it in. What a legend! Cindy is SO relieved. She tells everyone.",
+    question: "What does Cindy say?",
+    answers: [
+      { text: "I am so grateful to that person – what a nifty thing to do! 🙌", correct: true },
+      { text: "I am so grateful for that person – what a nifty thing to do!", correct: false },
+      { text: "I am so grateful of that person – what a nifty thing to do!", correct: false },
+      { text: "I am so grateful with that person – what a nifty thing to do!", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! We are 'grateful <b>to</b>' a person, and 'grateful <b>for</b>' something we receive.", incorrect: "We are 'grateful <b>to</b>' a person – 'I am grateful <b>to</b> you.'" },
+    prep: "good with"
+  },
+  {
+    time: "1:25 PM", emoji: "🛍️", location: "GALLERY GIFT SHOP",
+    story: "In the gift shop, Hai spots a nifty little book about Australian art. 📚 He wants to get it as a prezzy for his mum back home! So sweet! 🥰",
+    question: "What does Hai say?",
+    answers: [
+      { text: "I am going to lend this book to my mum – no, wait, I mean give it!", correct: false },
+      { text: "I am going to buy this book as a prezzy for my mum – she is good with art!", correct: false },
+      { text: "I reckon my mum is good at art – she will love this book as a prezzy!", correct: true },
+      { text: "I reckon my mum is good for art – she will love this book as a prezzy!", correct: false },
+    ],
+    feedback: { correct: "✅ Ripper! We say 'good <b>at</b>' a skill – 'She is good <b>at</b> art.'", incorrect: "We say 'good <b>at</b>' a skill – 'She is good <b>at</b> art.' Not 'good for' or 'good with' in this context." },
+    prep: "good at"
+  },
+  {
+    time: "1:27 PM", emoji: "📚", location: "GALLERY GIFT SHOP",
+    story: "Hai pays for the book 📖 but he is $5 short! He asks Bobo if she can lend him some money. She is a good mate.",
+    question: "What does Hai say?",
+    answers: [
+      { text: "Bobo, can you lend five dollars to me? I'll pay you back tomorrow!", correct: true },
+      { text: "Bobo, can you lend five dollars for me? I'll pay you back tomorrow!", correct: false },
+      { text: "Bobo, can you lend five dollars with me? I'll pay you back tomorrow!", correct: false },
+      { text: "Bobo, can you lend five dollars at me? I'll pay you back tomorrow!", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! We 'lend something <b>to</b>' someone.", incorrect: "We 'lend something <b>to</b>' someone – 'Can you lend it <b>to</b> me?'" },
+    prep: "lend to"
+  },
+
+  // ── 1:30 PM – Botanic Garden ──
+  {
+    time: "1:32 PM", emoji: "🌿", location: "ROYAL BOTANIC GARDEN",
+    story: "You leave the gallery and walk through the Royal Botanic Garden. 🌺 Gorgeous flowers everywhere! Sophie stops every few metres to look at them. The teacher says she is flat out obsessed with this walk.",
+    question: "What does the teacher say?",
+    answers: [
+      { text: "I am so keen on walking through this garden – it's a cracker! 🌸", correct: true },
+      { text: "I am so keen to walking through this garden – it's a cracker!", correct: false },
+      { text: "I am so keen about walking through this garden – it's a cracker!", correct: false },
+      { text: "I am so keen with walking through this garden – it's a cracker!", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! 'Keen <b>on</b>' something means you really enjoy it.", incorrect: "'Keen <b>on</b>' something means you enjoy or are enthusiastic about it." },
+    prep: "keen on"
+  },
+  {
+    time: "1:37 PM", emoji: "🌸", location: "ROYAL BOTANIC GARDEN",
+    story: "Nana, total stickybeak, picks up a fallen flower 🌺 from the ground. A gardener strolls over. Nana braces herself. The gardener smiles. No dramas!",
+    question: "What does the gardener say?",
+    answers: [
+      { text: "That flower belongs to the garden, but it's okay – it already fell. No worries! 😊", correct: true },
+      { text: "That flower belongs of the garden, but it's okay – it already fell. No worries!", correct: false },
+      { text: "That flower belongs in the garden, but it's okay – it already fell. No worries!", correct: false },
+      { text: "That flower belongs for the garden, but it's okay – it already fell. No worries!", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! We say something 'belongs <b>to</b>' someone or something.", incorrect: "We say 'belongs <b>to</b>' – 'This bag belongs <b>to</b> me.'" },
+    prep: "belong to"
+  },
+  {
+    time: "1:42 PM", emoji: "🕊️", location: "ROYAL BOTANIC GARDEN",
+    story: "Everyone is relaxing in the gardens. It's that peaceful 'veg out' moment before heading back. 🌿 Grace sits on the grass and hears birds. She is totally in the moment.",
+    question: "What does Grace say?",
+    answers: [
+      { text: "I am afraid of nothing right now – this garden is so calming! 🌿", correct: true },
+      { text: "I am afraid to nothing right now – this garden is so calming!", correct: false },
+      { text: "I am afraid with nothing right now – this garden is so calming!", correct: false },
+      { text: "I am afraid for nothing right now – this garden is so calming!", correct: false },
+    ],
+    feedback: { correct: "✅ Lovely! We say 'afraid <b>of</b>' something – 'I am afraid <b>of</b> spiders.'", incorrect: "We say 'afraid <b>of</b>' something – 'I am afraid <b>of</b> the dark.'" },
+    prep: "afraid of"
+  },
+  {
+    time: "1:46 PM", emoji: "🌊", location: "NEAR CIRCULAR QUAY",
+    story: "You can see the Opera House and the Harbour Bridge as you walk through the gardens. 🌉 Scott is already photographing the view from every angle. He wants to remember every moment of the day. 📸 Kazi laughs at himself trying to get a good shot too.",
+    question: "What does Kazi say?",
+    answers: [
+      { text: "I am not good at taking photos, but this view is a cracker! 📸", correct: true },
+      { text: "I am not good for taking photos, but this view is a cracker!", correct: false },
+      { text: "I am not good in taking photos, but this view is a cracker!", correct: false },
+      { text: "I am not good on taking photos, but this view is a cracker!", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! 'Good <b>at</b>' something means you have that skill.", incorrect: "We say 'good <b>at</b>' a skill – 'She is good <b>at</b> cooking.'" },
+    prep: "good at"
+  },
+  {
+    time: "1:48 PM", emoji: "🎁", location: "CIRCULAR QUAY AREA",
+    story: "Sophie wants to send her mum a photo as a prezzy. 🎁 She reckons her mum'll absolutely love seeing the Harbour Bridge. She messages her on the spot!",
+    question: "What does Sophie write to her mum?",
+    answers: [
+      { text: "Mum, the view here is the same as the photos you see in travel magazines! 😍", correct: true },
+      { text: "Mum, the view here is the same like the photos you see in travel magazines!", correct: false },
+      { text: "Mum, the view here is the same with the photos you see in travel magazines!", correct: false },
+      { text: "Mum, the view here is the same to the photos you see in travel magazines!", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! 'The same <b>as</b>' is used for comparisons.", incorrect: "We say 'the same <b>as</b>' – not 'the same like.'" },
+    prep: "same as"
+  },
+
+  // ── 1:50 PM – Return journey ──
+  {
+    time: "1:52 PM", emoji: "🚆", location: "CIRCULAR QUAY STATION",
+    story: "You reach Circular Quay Station. 🚆 Arzu and Yun check the time. It is getting close! The teacher says you all need to rely on the timetable. She doesn't beat around the bush. Get on the right platform NOW! 😂",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "We need to rely on the metro timetable to get back by 2:30. ⏰", correct: true },
+      { text: "We need to rely with the metro timetable to get back by 2:30.", correct: false },
+      { text: "We need to rely to the metro timetable to get back by 2:30.", correct: false },
+      { text: "We need to rely on with the metro timetable to get back by 2:30.", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! We 'rely <b>on</b>' something or someone we count on.", incorrect: "We 'rely <b>on</b>' something or someone – 'Can I rely <b>on</b> you?'" },
+    prep: "rely on"
+  },
+  {
+    time: "2:05 PM", emoji: "😴", location: "ON THE RETURN METRO",
+    story: "Everyone is heaps tired but smiling. 😊 Yun's granddaughter has fallen asleep on her lap. So cute! 👧💤 Yun is scared of one thing: that she won't finish her homework tonight! Not gonna lie, that's a real concern.",
+    question: "What does Yun say?",
+    answers: [
+      { text: "I am scared of not finishing my homework tonight – I am flat out exhausted! 😴", correct: true },
+      { text: "I am scared about not finishing my homework tonight – I am flat out exhausted!", correct: false },
+      { text: "I am scared for not finishing my homework tonight – I am flat out exhausted!", correct: false },
+      { text: "I am scared with not finishing my homework tonight – I am flat out exhausted!", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! 'Scared <b>of</b>' is the natural collocation.", incorrect: "We say 'scared <b>of</b>' something – 'I am scared <b>of</b> dogs.'" },
+    prep: "scared of"
+  },
+  {
+    time: "2:10 PM", emoji: "📷", location: "ON THE RETURN METRO",
+    story: "Scott pulls out his phone and scrolls through all the photos he took throughout the day. 📸 They are AMAZING! Everyone crowds around to look. He says he agrees with his photography teacher. Practice pays off!",
+    question: "What does Scott say?",
+    answers: [
+      { text: "I agree with my photography teacher – you must practise every day! 📸", correct: true },
+      { text: "I agree to my photography teacher – you must practise every day!", correct: false },
+      { text: "I agree on my photography teacher – you must practise every day!", correct: false },
+      { text: "I agree at my photography teacher – you must practise every day!", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! We 'agree <b>with</b>' a person.", incorrect: "We 'agree <b>with</b>' a person – 'I agree <b>with</b> you.'" },
+    prep: "agree with"
+  },
+  {
+    time: "2:15 PM", emoji: "🎉", location: "ON THE RETURN METRO",
+    story: "Henry, the wine-shouting legend 🍷😂, says he is proud of the whole class. He tells everyone how good the day was. The whole carriage claps. 👏",
+    question: "What does Henry say?",
+    answers: [
+      { text: "Not gonna lie, I reckon today was good for our English AND our souls! 🌟", correct: true },
+      { text: "Not gonna lie, I reckon today was good at our English AND our souls!", correct: false },
+      { text: "Not gonna lie, I reckon today was good on our English AND our souls!", correct: false },
+      { text: "Not gonna lie, I reckon today was good about our English AND our souls!", correct: false },
+    ],
+    feedback: { correct: "✅ Good onya Henry! We say 'good <b>for</b>' when something benefits you.", incorrect: "We say 'good <b>for</b>' when something benefits you – 'Fruit is good <b>for</b> you.'" },
+    prep: "good for"
+  },
+
+  // ── 2:30 PM – Back at TAFE ──
+  {
+    time: "2:28 PM", emoji: "🏫", location: "CAMPSIE TAFE – ARRIVAL",
+    story: "You arrive back at Campsie TAFE! 🏫 Right on time. Nina and Grace walk through the door first, grinning. The teacher says the day was a cracker. She pulled out all the stops to make it perfect!",
+    question: "What does the teacher say?",
+    answers: [
+      { text: "The success of today's excursion is because of every one of you – good onya! 🙌", correct: true },
+      { text: "The success of today's excursion is because for every one of you – good onya!", correct: false },
+      { text: "The success of today's excursion is because to every one of you – good onya!", correct: false },
+      { text: "The success of today's excursion is because with every one of you – good onya!", correct: false },
+    ],
+    feedback: { correct: "✅ Excellent! 'Because <b>of</b>' gives the reason for something.", incorrect: "'Because <b>of</b>' explains the cause or reason – 'Because <b>of</b> the rain, we stayed inside.'" },
+    prep: "cause of"
+  },
+  {
+    time: "2:30 PM", emoji: "🌟", location: "CAMPSIE TAFE – CLASSROOM",
+    story: "Back in class, the teacher asks if anyone wants to complain about anything. 😬 It's a language task! Henry puts his hand up straight away. No surprises there. Go on Henry, have a crack! Don't whinge too much though... 😂",
+    question: "Which sentence uses the correct preposition?",
+    answers: [
+      { text: "I want to complain about the price of the café food – heaps too expensive! 💸", correct: true },
+      { text: "I want to complain for the price of the café food – heaps too expensive!", correct: false },
+      { text: "I want to complain of the price of the café food – heaps too expensive!", correct: false },
+      { text: "I want to complain at the price of the café food – heaps too expensive!", correct: false },
+    ],
+    feedback: { correct: "✅ Well said! We 'complain <b>about</b>' something.", incorrect: "We 'complain <b>about</b>' something – 'She complained <b>about</b> the weather.'" },
+    prep: "complain about"
+  },
+  {
+    time: "2:35 PM", emoji: "🏆", location: "CAMPSIE TAFE – CLASSROOM",
+    story: "The teacher smiles and says today's excursion hit the right note. 🎵 She asks everyone how the day compared to what they expected. Hai thinks for a moment, then answers. It totally steals the show!",
+    question: "Which sentence is correct?",
+    answers: [
+      { text: "Today was the same as I imagined – exciting, educational, and heaps of fun! 🎉", correct: true },
+      { text: "Today was the same like I imagined – exciting, educational, and heaps of fun!", correct: false },
+      { text: "Today was the same with I imagined – exciting, educational, and heaps of fun!", correct: false },
+      { text: "Today was the same to I imagined – exciting, educational, and heaps of fun!", correct: false },
+    ],
+    feedback: { correct: "✅ Correct! 'The same <b>as</b>' is used for comparisons.", incorrect: "We say 'the same <b>as</b>' – not 'the same like.'" },
+    prep: "same as"
+  },
+
+];
+
+// ── Game state ───────────────────────────────────────────────────────────────
+let questions = [];
+let currentIndex = 0;
+let score = 0;
+let correctCount = 0;
+let incorrectCount = 0;
+let streak = 0;
+let shuffleOn = true;
+let storyMode = false;
+let missedPreps = {};
+let answered = false;
+let answeredHistory = []; // tracks {score, correctCount, incorrectCount, streak, missedPreps} per question
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function initGame() {
+  currentIndex = 0; score = 0; correctCount = 0; incorrectCount = 0; streak = 0; missedPreps = {}; answered = false; answeredHistory = [];
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('end-screen').classList.remove('show');
+  document.getElementById('game-area').style.display = 'block';
+  document.getElementById('header').style.display = 'block';
+  document.getElementById('progress-bar-wrap').style.display = 'block';
+  updateHeader();
+  renderQuestion();
+}
+
+function startGame() {
+  storyMode = false;
+  shuffleOn = true;
+  questions = shuffle(ALL_SCENARIOS);
+  document.getElementById('shuffle-btn').textContent = '🔀 Scenarios: Shuffled';
+  initGame();
+}
+
+function startStory() {
+  storyMode = true;
+  shuffleOn = false;
+  // Sort by time string (HH:MM AM/PM) then by original index for ties
+  questions = [...ALL_SCENARIOS].sort((a, b) => {
+    const toMins = t => {
+      const [time, period] = t.split(' ');
+      let [h, m] = time.split(':').map(Number);
+      if (period === 'PM' && h !== 12) h += 12;
+      if (period === 'AM' && h === 12) h = 0;
+      return h * 60 + m;
+    };
+    return toMins(a.time) - toMins(b.time);
+  });
+  document.getElementById('shuffle-btn').textContent = '🔀 Scenarios: In order';
+  initGame();
+}
+
+function renderQuestion() {
+  answered = false;
+  const q = questions[currentIndex];
+  document.getElementById('time-marker').textContent = '⏰ ' + q.time;
+  document.getElementById('card-emoji').textContent = q.emoji;
+  document.getElementById('card-location').textContent = q.location;
+  document.getElementById('card-story').textContent = q.story;
+  document.getElementById('card-question').textContent = q.question;
+  // Answers are always shuffled so the correct answer position is never predictable
+  let answers = shuffle(q.answers.map((a, i) => ({ ...a, originalIndex: i })));
+  const letters = ['A', 'B', 'C', 'D'];
+  const container = document.getElementById('card-answers');
+  container.innerHTML = '';
+  answers.forEach((ans, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.innerHTML = `<span class="letter">${letters[i]}</span><span>${ans.text}</span>`;
+    btn.onclick = () => handleAnswer(ans.correct, q, btn);
+    container.appendChild(btn);
+  });
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+  document.getElementById('next-btn').classList.remove('show');
+  const prevBtn = document.getElementById('prev-btn');
+  prevBtn.disabled = currentIndex === 0;
+  const card = document.getElementById('scenario-card');
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = 'slideIn 0.35s ease';
+}
+
+function handleAnswer(isCorrect, q, clickedBtn) {
+  if (answered) return;
+  answered = true;
+  // Save state before this answer for undo
+  answeredHistory[currentIndex] = { score, correctCount, incorrectCount, streak, missedPreps: {...missedPreps} };
+  const allBtns = document.querySelectorAll('.answer-btn');
+  allBtns.forEach(btn => {
+    btn.disabled = true;
+    if (btn === clickedBtn) {
+      btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+    } else {
+      const txt = btn.querySelector('span:last-child').textContent;
+      if (q.answers.find(a => a.text === txt && a.correct)) btn.classList.add('correct');
+    }
+  });
+  const fb = document.getElementById('feedback');
+  if (isCorrect) {
+    score += 10; correctCount++; streak++;
+    fb.className = 'feedback correct-fb show';
+    fb.innerHTML = `<strong>✅ Correct!</strong> ${q.feedback.correct} &nbsp;<span class="prep-highlight">${q.prep}</span>`;
+  } else {
+    incorrectCount++; streak = 0;
+    missedPreps[q.prep] = (missedPreps[q.prep] || 0) + 1;
+    fb.className = 'feedback incorrect-fb show';
+    fb.innerHTML = `<strong>❌ Not quite!</strong> ${q.feedback.incorrect} &nbsp;<span class="prep-highlight">${q.prep}</span>`;
+  }
+  document.getElementById('next-btn').classList.add('show');
+  updateHeader();
+}
+
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex >= questions.length) { showEnd(); }
+  else { renderQuestion(); updateHeader(); }
+}
+
+function prevQuestion() {
+  if (currentIndex === 0) return;
+  currentIndex--;
+  // Restore score state to before that question was answered
+  if (answeredHistory[currentIndex]) {
+    const h = answeredHistory[currentIndex];
+    score = h.score; correctCount = h.correctCount; incorrectCount = h.incorrectCount; streak = h.streak; missedPreps = {...h.missedPreps};
+    delete answeredHistory[currentIndex];
+  }
+  renderQuestion();
+  updateHeader();
+}
+
+function updateHeader() {
+  document.getElementById('score-pill').textContent = `⭐ Score: ${score}`;
+  document.getElementById('progress-pill').textContent = `📍 Q${currentIndex + 1} of ${questions.length}`;
+  document.getElementById('streak-pill').textContent = `🔥 Streak: ${streak}`;
+  document.getElementById('progress-fill').style.width = ((currentIndex / questions.length) * 100) + '%';
+}
+
+function showEnd() {
+  document.getElementById('game-area').style.display = 'none';
+  document.getElementById('progress-fill').style.width = '100%';
+  const pct = Math.round((correctCount / questions.length) * 100);
+  let trophy = '🎉', title = 'Adventure Complete!', subtitle = "You made it back to Campsie TAFE – good onya! 🦘";
+  if (pct >= 90) { trophy = '🏆'; title = 'You knocked it out of the park! 🏏'; subtitle = "Not gonna lie, you absolutely belt it out! Ripper effort! 🎉"; }
+  else if (pct >= 70) { trophy = '🌟'; title = 'You hit the right note! 🎵'; subtitle = "Heaps of great answers, you handled that excursion like a pro! 😎"; }
+  else if (pct >= 50) { trophy = '😊'; title = 'Have a crack again! 💪'; subtitle = "Good effort! Keep going about it and you'll get there! 📚"; }
+  else { trophy = '📚'; title = "Don't get cold feet!"; subtitle = "Review these prepositions and have another crack, no worries! 💪"; }
+  document.getElementById('end-trophy').textContent = trophy;
+  document.getElementById('end-title').textContent = title;
+  document.getElementById('end-subtitle').textContent = subtitle;
+  document.getElementById('end-score').textContent = score;
+  document.getElementById('end-correct').textContent = correctCount;
+  document.getElementById('end-incorrect').textContent = incorrectCount;
+  const tagsContainer = document.getElementById('practice-tags');
+  tagsContainer.innerHTML = '';
+  const preps = Object.keys(missedPreps);
+  if (preps.length === 0) {
+    tagsContainer.innerHTML = '<span class="no-practice">🎉 You got all of them right. You totally stole the show!</span>';
+  } else {
+    preps.sort().forEach(p => {
+      const tag = document.createElement('span');
+      tag.className = 'practice-tag';
+      tag.textContent = p;
+      tagsContainer.appendChild(tag);
+    });
+  }
+  document.getElementById('end-screen').classList.add('show');
+}
+
+function confirmReset() {
+  if (confirm('Are you sure you want to restart the adventure from the beginning?')) {
+    storyMode ? startStory() : startGame();
+  }
+}
+
+function toggleShuffle() {
+  shuffleOn = !shuffleOn;
+  if (shuffleOn) {
+    questions = shuffle(ALL_SCENARIOS);
+    currentIndex = 0; score = 0; correctCount = 0; incorrectCount = 0; streak = 0; missedPreps = {}; answered = false; answeredHistory = [];
+    document.getElementById('shuffle-btn').textContent = '🔀 Scenarios: Shuffled';
+    updateHeader();
+    renderQuestion();
+  } else {
+    questions = [...ALL_SCENARIOS].sort((a, b) => {
+      const toMins = t => {
+        const [time, period] = t.split(' ');
+        let [h, m] = time.split(':').map(Number);
+        if (period === 'PM' && h !== 12) h += 12;
+        if (period === 'AM' && h === 12) h = 0;
+        return h * 60 + m;
+      };
+      return toMins(a.time) - toMins(b.time);
+    });
+    currentIndex = 0; score = 0; correctCount = 0; incorrectCount = 0; streak = 0; missedPreps = {}; answered = false; answeredHistory = [];
+    document.getElementById('shuffle-btn').textContent = '🔀 Scenarios: In order';
+    updateHeader();
+    renderQuestion();
+  }
+}
+</script>
+</body>
+</html>
